@@ -1,4 +1,4 @@
-![PyPI Version](https://img.shields.io/pypi/v/lelouch)
+[![PyPI Version](https://img.shields.io/pypi/v/lelouch)](https://pypi.org/project/lelouch/)
 
 # lelouch
 
