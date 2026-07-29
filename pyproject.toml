@@ -4,7 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lelouch"
-version = "0.0.0"
+version = "0.0.2"
+dependencies = [
+  "openai>=2.50.0",
+]
 authors = [
   { name="Falk Werner" },
 ]
@@ -19,5 +22,5 @@ license = "MIT"
 license-files = ["LICENSE"]
 
 [project.urls]
-Homepage = "https://github.com/falk-werner/pygentic"
-Issues = "https://github.com/falk-werner/pygentic/issues"
+Homepage = "https://github.com/falk-werner/lelouch"
+Issues = "https://github.com/falk-werner/lelouch/issues"
