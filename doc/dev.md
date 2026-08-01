@@ -14,7 +14,7 @@ docker build -t lelouch .
 Once before test, install `pytest`:
 
 ```bash
-python3 -m pip install pytest
+python3 -m pip install -r dev_requirements.txt
 ```
 
 Run tests:
