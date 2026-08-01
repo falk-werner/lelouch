@@ -33,12 +33,33 @@ class Agent:
             "content": prompt
         })
 
-        response = self.client.responses.create(
-            model = self.model,
-            input = self.input_list,
-            instructions = self.instructions,
-            tools = self.tools.get()
-        )
+        done = False
+        while not done:
+            response = self.client.responses.create(
+                model = self.model,
+                input = self.input_list,
+                instructions = self.instructions,
+                tools = self.tools.get()
+            )
 
-        print(response.output_text)
-        self.input_list.extend(response.output)
+            print(response.output_text)
+            self.input_list.extend(response.output)
+            done = True
+
+            for output in response.output:
+                if output.type == "function_call":
+                    done = False
+                    result = self.tools.invoke(output.name, output.arguments)
+                    self.input_list.append({
+                        "type": "function_call_output",
+                        "call_id": output.call_id,
+                        "output": result,
+                    })
+                elif output.type == "message":
+                    print(f"Status: {output.status}")
+                else:
+                    print("warning igonre unsupported output type: {output.type}")
+
+            
+
+        
