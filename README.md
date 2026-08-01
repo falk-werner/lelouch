@@ -1,3 +1,4 @@
+[![Build](https://github.com/falk-werner/lelouch/actions/workflows/build.yml/badge.svg)](https://github.com/falk-werner/lelouch/actions/workflows/build.yml)
 [![PyPI Version](https://img.shields.io/pypi/v/lelouch)](https://pypi.org/project/lelouch/)
 
 # lelouch
