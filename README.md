@@ -9,3 +9,8 @@ Library to create autonomous agents.
 | Variable | Description |
 | -------- | ----------- |
 | MODEL    | ID of the default model |
+
+## References
+
+- [Open AI Responses API](https://developers.openai.com/api/reference/resources/responses)
+- [Open AI list models API](https://developers.openai.com/api/reference/resources/models/methods/list)
