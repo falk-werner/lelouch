@@ -57,7 +57,8 @@ class Agent:
                 reasoning = reasoning
             )
 
-            self.input_list.extend(response.output)
+            for output in response.output:
+                self.input_list.append(output.to_dict())
             done = True
 
             for output in response.output:
