@@ -15,6 +15,7 @@ def main():
     parser.add_argument("--api-key", "-k", type=str, default=getenv("API_KEY"))
     parser.add_argument("--model", "-m", type=str, default=getenv("MODEL"))
     parser.add_argument("--instructions", "-i", type=str, default="")
+    parser.add_argument("--reasoning", "-r", type=str, default=None)
     parser.add_argument("--no-color", action="store_true")
     parser.add_argument("prompt", type=str)
     args = parser.parse_args()
@@ -26,6 +27,7 @@ def main():
         model=args.model,
         instructions=args.instructions,
         tools=tools,
+        reasoning=args.reasoning,
         log=log)
     agent.execute(args.prompt)
 
