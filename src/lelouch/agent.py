@@ -1,7 +1,7 @@
 
 from .tools import Tools
 from .logger import Logger
-from openai import OpenAI
+from openai import OpenAI, omit
 from os import getenv
 from typing import List
 
@@ -16,6 +16,7 @@ class Agent:
     instructions: str
     tools: Tools
     input_list: List
+    reasoning: bool
     log: Logger
 
     def __init__(self,
@@ -23,12 +24,14 @@ class Agent:
             model: str | None = None,
             instructions: str = "",
             tools: Tools | None = None,
+            reasoning: bool | str | None = None,
             log: Logger | None = None):
         self.client = client if client else OpenAI()
         self.model = model if model else getenv_or_die("MODEL")
         self.instructions = instructions
         self.tools = tools if tools else Tools()
         self.input_list = []
+        self.reasoning = reasoning
         self.log = log if log else Logger()
 
     def execute(self, prompt: str):
@@ -37,6 +40,13 @@ class Agent:
             "content": prompt
         })
 
+        if isinstance(self.reasoning, bool):
+            reasoning = {"effort": "medium"} if self.reasoning else {"effort": "none"}
+        elif isinstance(self.reasoning, str):
+            reasoning = {"effort": self.reasoning}
+        else:
+            reasoning = omit
+   
         done = False
         while not done:
             response = self.client.responses.create(
@@ -44,6 +54,7 @@ class Agent:
                 input = self.input_list,
                 instructions = self.instructions,
                 tools = self.tools.get(),
+                reasoning = reasoning
             )
 
             self.input_list.extend(response.output)
