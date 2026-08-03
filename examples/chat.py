@@ -4,19 +4,29 @@ from lelouch import Agent, list_models
 from openai import OpenAI
 import argparse
 from os import getenv
-import json
+import readline
 
 def print_usage():
-    print("/help             - show this message")
-    print("/info             - print current session information")
-    print("/history          - prints the history of the current session")
-    print("/history pop      - removes the last item from the history")
-    print("/models           - list available models")
-    print("/model MODEL      - use the model MODEL")
-    print("/instruction INST - set instructions (aka system prompt)")
-    print("/reasoning VALUE  - set reasoning level (none, minimal, low, high, max)")
-    print("/new              - start a new session")
-    print("/exit             - exit")
+    print("/help              - show this message")
+    print("/info              - print current session information")
+    print("/history           - prints the history of the current session")
+    print("/history pop       - removes the last item from the history")
+    print("/models            - list available models")
+    print("/model MODEL       - use the model MODEL")
+    print("/instructions INST - set instructions (aka system prompt)")
+    print("/reasoning VALUE   - set reasoning level (none, minimal, low, high, max)")
+    print("/new               - start a new session")
+    print("/exit              - exit")
+
+def completer(text: str, state: int) -> str | None:
+    commands = ["/help", "/info", "/history", "/models", "/model", "/instructions", 
+        "/reasoning", "/new", "/exit"]
+    available_commands = [command for command in commands if command.startswith(text)]
+
+    if state < len(available_commands):
+        return available_commands[state]
+    else:
+        return None
 
 def main():
     parser = argparse.ArgumentParser()
@@ -27,6 +37,10 @@ def main():
     parser.add_argument("--reasoning", "-r", type=str, default=None)
     args = parser.parse_args()
     client = OpenAI(base_url=args.base_url, api_key= args.api_key)
+
+    readline.parse_and_bind("tab: complete")
+    readline.set_completer_delims("")
+    readline.set_completer(completer)
 
     model = args.model
     instructions = args.instructions
