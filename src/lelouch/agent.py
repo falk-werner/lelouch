@@ -64,7 +64,14 @@ class Agent:
             for output in response.output:
                 if output.type == "function_call":
                     done = False
-                    result = self.tools.invoke(output.name, output.arguments, self.log)
+
+                    try:
+                        result = self.tools.invoke(output.name, output.arguments, self.log)
+                        self.log.info(f"tool result: {result}")
+                    except Exception as ex:
+                        self.log.warn(f"error calling tools: {ex}")
+                        result = "error"
+
                     self.input_list.append({
                         "type": "function_call_output",
                         "call_id": output.call_id,
