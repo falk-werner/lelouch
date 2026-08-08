@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from lelouch import Agent, Tools
-from lelouch.tools import RemoveFileTool, ListFilesTool
+from lelouch.tools import ReadFileTool, ListFilesTool, RemoveFileTool
 from openai import OpenAI
 import argparse
 import os
@@ -20,16 +20,6 @@ def resolve(path: str) -> str:
         raise RuntimeError("path traversal detected")
 
     return resolved_path
-
-def file_read(filename: str) -> str:
-    """Returns the full contents of a file."""
-    full_filename = resolve(filename)
-
-    if not os.path.isfile(full_filename):
-        return "error: file not found"
-    
-    with open(full_filename, "r", encoding="utf-8") as f:
-        return f.read()
 
 def file_create(filename: str, contents: str) -> str:
     """
@@ -128,7 +118,8 @@ def new_agent(client, args) -> Agent:
         model=args.model,
         instructions=args.instructions,
         reasoning=args.reasoning,
-        tools=Tools([file_read, ListFilesTool(workspace), file_create, RemoveFileTool(workspace),
+        tools=Tools([ReadFileTool(workspace), ListFilesTool(workspace),
+                     file_create, RemoveFileTool(workspace),
                      file_rename, file_replace_string,
                      cmake_configure, cmake_build, cmake_test]))
 
@@ -175,7 +166,6 @@ def main():
             agent = new_agent(client, args)
         else:
             agent.execute(prompt)
-
 
 if __name__ == "__main__":
     main()

@@ -73,4 +73,9 @@ def test_do_not_list_hidden_files_and_directories():
         result = json.loads(tool())
 
         assert len(result) == 0
-        
+
+def test_fail_with_wrong_argument_type():
+    tool = ListFilesTool("dummy")
+    result = tool(None)
+    assert "error: invalid arguments" == result
+

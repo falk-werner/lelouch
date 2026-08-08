@@ -3,9 +3,9 @@ import os
 import tempfile
 
 def test_name():
-    """Tool.__name__ should default to `file_remove`."""
+    """Tool.__name__ should default to `remove_file`."""
     tool = RemoveFileTool("dummy")
-    assert "file_remove" == tool.__name__
+    assert "remove_file" == tool.__name__
 
 def test_custom_name():
     """Tool.__name__ can be customized."""
@@ -109,3 +109,7 @@ def test_do_not_remove_custom_ignored_file():
         assert "ok" == result
         assert os.path.exists(full_filename)
 
+def test_fail_with_wrong_argument_type():
+    tool = RemoveFileTool("dummy")
+    result = tool(None)
+    assert "error: invalid arguments" == result
