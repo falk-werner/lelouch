@@ -71,6 +71,41 @@ def test_fail_to_remove_directory():
         assert "error: not a file" == result
         assert os.path.exists(full_path)
 
+def test_do_not_remove_ignored_file():
+    """
+    Tool should not remove an ignored file.
 
+    In this case, it should return "ok" to mimic the behavior for
+    non-existing files.
+    """
+    with tempfile.TemporaryDirectory(prefix="lelouch_test_", delete=True) as workdir:
+        filename = ".hidden"
+        full_filename = os.path.join(workdir, filename) 
+        with open(full_filename, "w", encoding="utf-8") as f:
+            f.write("test file")
+        assert os.path.isfile(full_filename)
 
+        tool = RemoveFileTool(workdir)
+        result = tool(filename)
+        assert "ok" == result
+        assert os.path.exists(full_filename)
+
+def test_do_not_remove_custom_ignored_file():
+    """
+    Tool should not remove an ignored file.
+
+    In this case, it should return "ok" to mimic the behavior for
+    non-existing files.
+    """
+    with tempfile.TemporaryDirectory(prefix="lelouch_test_", delete=True) as workdir:
+        filename = "test.txt"
+        full_filename = os.path.join(workdir, filename) 
+        with open(full_filename, "w", encoding="utf-8") as f:
+            f.write("test file")
+        assert os.path.isfile(full_filename)
+
+        tool = RemoveFileTool(workdir, ignored_files=["*.txt"])
+        result = tool(filename)
+        assert "ok" == result
+        assert os.path.exists(full_filename)
 

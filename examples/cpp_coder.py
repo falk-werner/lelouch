@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from lelouch import Agent, Tools
-from lelouch.tools import RemoveFileTool
+from lelouch.tools import RemoveFileTool, ListFilesTool
 from openai import OpenAI
 import argparse
 import os
@@ -21,26 +21,6 @@ def resolve(path: str) -> str:
 
     return resolved_path
 
-
-def list_files(directory: str = "/") -> str:
-    """Recursively lists files in a directory as json list."""
-    base_dir = resolve(directory)
-
-    result = []
-    for root, dirs, files in os.walk(base_dir):
-        for file in files:
-            full_path = os.path.join(base_dir, root, file)
-
-            # skip hidden files an directories
-            if "/." in full_path:
-                continue
-
-            if os.path.isfile(full_path):
-                result.append(os.path.relpath(full_path, base_dir))
-
-    return json.dumps(result)
-        
-    
 def file_read(filename: str) -> str:
     """Returns the full contents of a file."""
     full_filename = resolve(filename)
@@ -148,7 +128,8 @@ def new_agent(client, args) -> Agent:
         model=args.model,
         instructions=args.instructions,
         reasoning=args.reasoning,
-        tools=Tools([file_read, list_files, file_create, RemoveFileTool(workspace), file_rename, file_replace_string,
+        tools=Tools([file_read, ListFilesTool(workspace), file_create, RemoveFileTool(workspace),
+                     file_rename, file_replace_string,
                      cmake_configure, cmake_build, cmake_test]))
 
 
