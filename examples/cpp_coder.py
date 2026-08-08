@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from lelouch import Agent, Tools
+from lelouch.tools import RemoveFileTool
 from openai import OpenAI
 import argparse
 import os
@@ -20,16 +21,6 @@ def resolve(path: str) -> str:
 
     return resolved_path
 
-
-def file_remove(filename: str) -> str:
-    """Removes a single file."""
-    full_filename = resolve(filename)
-
-    if not os.path.isfile(full_filename):
-        return "error: not a file"
-    
-    os.remove(full_filename)
-    return "ok"
 
 def list_files(directory: str = "/") -> str:
     """Recursively lists files in a directory as json list."""
@@ -157,7 +148,7 @@ def new_agent(client, args) -> Agent:
         model=args.model,
         instructions=args.instructions,
         reasoning=args.reasoning,
-        tools=Tools([file_read, list_files, file_create, file_remove, file_rename, file_replace_string,
+        tools=Tools([file_read, list_files, file_create, RemoveFileTool(workspace), file_rename, file_replace_string,
                      cmake_configure, cmake_build, cmake_test]))
 
 
