@@ -1,5 +1,5 @@
 
-from .logger import Logger
+from ..logger import Logger
 from typing import List, Dict, Callable
 import inspect
 import json
@@ -69,3 +69,15 @@ class Tools:
 
     def get(self):
         return self.docs
+
+class BaseTool:
+    name: str
+
+    def __init__(self, name: str):
+        self.name = name
+
+    def __getattr__(self, name: str):
+        if name == "__name__":
+            return self.name
+        else:
+            raise AttributeError
