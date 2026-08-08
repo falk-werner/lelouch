@@ -1,5 +1,5 @@
 from .tools import Tools, BaseTool
-from .file_tools import BaseFileTool, RemoveFileTool, ListFilesTool
+from .file_tools import BaseFileTool, RemoveFileTool, ListFilesTool,ReadFileTool
 
 __all__ = [
     "Tools",
@@ -7,4 +7,5 @@ __all__ = [
     "BaseFileTool",
     "RemoveFileTool",
     "ListFilesTool",
+    "ReadFileTool",
 ]

@@ -45,10 +45,15 @@ class RemoveFileTool(BaseFileTool):
     Returns "ok" on success.
     """
 
-    def __init__(self, workdir: str, name="file_remove"):
-        super(RemoveFileTool, self).__init__(workdir, name)
+    def __init__(self, workdir: str,
+            name: str = "remove_file",
+            ignored_files : List[str] | None = None):
+        super(RemoveFileTool, self).__init__(workdir, name, ignored_files)
 
     def __call__(self, filename: str) -> str:
+        if not isinstance(filename, str):
+            return "error: invalid arguments"
+
         try:
             resolved_filename = self.resolve(filename)
         except Exception:
@@ -82,6 +87,9 @@ class ListFilesTool(BaseFileTool):
         super(ListFilesTool, self).__init__(workdir, name, ignored_files)
 
     def __call__(self, directory: str = "/") -> str:
+        if not isinstance(directory, str):
+            return "error: invalid arguments"
+
         try:
             resolved_directory = self.resolve(directory)
         except Exception:
@@ -105,3 +113,59 @@ class ListFilesTool(BaseFileTool):
                 result.append(relative_filename)
 
         return json.dumps(result)
+
+class ReadFileTool(BaseFileTool):
+    """
+    Reads the contents of a file.
+
+    Arguments:
+    - `filename`: name of the file to read
+    - `first_line`: first line to read. Default: 0 (first line)
+    - `line_count`: amount of lines to read. Default: 0 (read whole file)
+
+    Return a json object.
+
+    On success, the property `first_line` contains the number of the first line read,
+    the property `total_lines` contains the total amount of lines in the file and the
+    property `lines` contains the array of the lines read from the file.
+    Example: `{"first_line": 0, "total_lines": 2, "lines": ["first line", "second line"]}`
+
+    On failure, the error message is return in the `error` property.
+    Example: `{"error": "error message"}`
+    """
+
+    def __init__(self, workdir: str,
+            name: str = "read_file",
+            ignored_files: List[str] | None = None):
+        super(ReadFileTool, self).__init__(workdir, name, ignored_files)
+
+    def __call__(self, filename: str, first_line: int = 0, line_count: int = 0) -> str:
+        if not isinstance(filename, str) or not isinstance(first_line, int) \
+                or not isinstance(line_count, int) or first_line < 0 or line_count < 0:
+            return json.dumps({"error": "invalid arguments"})
+
+        try:
+            resolved_filename = self.resolve(filename)
+        except Exception:
+            return json.dumps({"error": "invalid filename"})
+
+        relative_filename = os.path.relpath(resolved_filename, self.workdir)
+        if not os.path.exists(resolved_filename) or self.is_ignored(relative_filename):
+            return json.dumps({"error": "file not found"})
+
+        if not os.path.isfile(resolved_filename):
+            return json.dumps({"error": "not a file"})
+
+        try:
+            with open(resolved_filename,"r", encoding="utf-8") as f:
+                lines = f.readlines()
+        except Exception:
+            return json.dumps({"error": "failed to read file"})
+
+        total_lines = len(lines)
+        if line_count == 0:
+            lines = lines[first_line:]
+        else:
+            lines = lines[first_line: first_line + line_count]
+
+        return json.dumps({"first_line": first_line, "total_lines": total_lines, "lines": lines}) 
