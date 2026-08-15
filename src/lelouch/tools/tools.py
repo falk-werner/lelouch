@@ -61,9 +61,10 @@ class Tools:
         self.docs.append(doc)
 
     def invoke(self, tool_name: str, arguments: str, log: Logger) -> str:
+        arguments=json.loads(arguments)
         ask = self.ask.get(tool_name, True)
         if ask:
-            permitted = log.ask(f"Model wants to call a tool:\n  name: {tool_name}\n  args: {arguments}\n\nPermit? [Y for yes, A for always, N for no or reason to reject]: ")
+            permitted = log.ask(f"Model wants to call a tool:\n  name: {tool_name}\n  args: {json.dumps(arguments,indent=4)}\n\nPermit? [Y for yes, A for always, N for no or reason to reject]: ")
             if permitted in ["", "N", "n"]:
                 return f"error: tool usage not permitted by user"
             if permitted not in ["Y", "y", "A", "a"]:
@@ -73,12 +74,12 @@ class Tools:
                 if confirmed in ["Y", "y"]:
                     self.ask[tool_name] = False
         else:
-            log.info(f"Model calls permitted tool {tool_name} with arguments {arguments}.")
+            log.info(f"Model calls permitted tool {tool_name} with arguments {json.dumps(arguments, indent=4)}.")
 
         tool = self.tools.get(tool_name)
         if tool:
             args = ()
-            kwargs = json.loads(arguments)
+            kwargs = arguments
             return tool(*args, **kwargs)
         log.warn(f"unknown tool {tool_name}")
         return "error: unknown tool"

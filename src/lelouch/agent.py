@@ -4,6 +4,7 @@ from .logger import Logger
 from openai import OpenAI, omit
 from os import getenv
 from typing import List
+import json
 
 def getenv_or_die(name):
     result = getenv(name)
@@ -69,7 +70,10 @@ class Agent:
                         result = self.tools.invoke(output.name, output.arguments, self.log)
                         if not isinstance(result, str):
                             raise RuntimeError("invalid result type")
-                        self.log.info(f"tool result: {result}")
+                        try:
+                            self.log.info(f"tool result: {json.dumps(json.loads(result), indent=4)}")
+                        except Exception:
+                            self.log.info(f"tool result: {result}")
                     except Exception as ex:
                         self.log.warn(f"error calling tools: {ex}")
                         result = "error"
