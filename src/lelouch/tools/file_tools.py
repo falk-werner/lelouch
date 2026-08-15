@@ -266,3 +266,61 @@ class EditFileTool(BaseFileTool):
             return "error: cannot find `old` in file"
         else:
             return "error: found `old` muliple times in file; please add more context"
+
+class MoveFileTool(BaseFileTool):
+    """
+    Moves or renames an existing file.
+
+    Parent directories of `new_filename` will be created as needed.
+    Note that `new_filename` must not exist.
+
+    Arguments:
+    - filename: path of the file to move or rename
+    - new_filename: new path of the file
+
+    Returns "ok" on success.
+    """
+
+    def __init__(self, workdir: str,
+            name: str = "move_file",
+            ignored_files: List[str] | None = None):
+        super(MoveFileTool, self).__init__(workdir, name, ignored_files)
+
+    def __call__(self, filename: str, new_filename: str) -> str:
+        if not isinstance(filename, str) or not isinstance(new_filename, str):
+            return "error: invalid arguments"
+
+        try:
+            source = self.resolve(filename)
+        except Exception:
+            return "error: invalid filename"
+
+        relative_source = os.path.relpath(source, self.workdir)
+        if not os.path.exists(source) or self.is_ignored(relative_source):
+            return "error: file not found"
+
+        try:
+            target = self.resolve(new_filename)
+        except Exception:
+            return "error: invalid new filename"
+
+        relative_target = os.path.relpath(target, self.workdir)
+        if self.is_ignored(relative_target):
+            return "error: invalid new_filename"
+
+        if os.path.exists(target):
+            return "error: new_filename already exists"
+
+        parent_dir = os.path.dirname(target)
+        if not os.path.exists(parent_dir):
+            try:
+                os.makedirs(parent_dir)
+            except Exception:
+                return "failed to create parent directories"
+
+        try:
+            os.rename(source, target)
+        except Exception:
+            return "error: failed to move file"
+
+        return "ok"

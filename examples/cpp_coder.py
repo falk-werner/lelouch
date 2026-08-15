@@ -2,7 +2,7 @@
 
 from lelouch import Agent, Tools
 from lelouch.tools import ReadFileTool, ListFilesTool, RemoveFileTool, \
-    CreateFileTool, EditFileTool
+    CreateFileTool, EditFileTool, MoveFileTool
 from openai import OpenAI
 import argparse
 import os
@@ -80,7 +80,7 @@ def new_agent(client, args) -> Agent:
         reasoning=args.reasoning,
         tools=Tools([ReadFileTool(workspace), ListFilesTool(workspace),
                      CreateFileTool(workspace), RemoveFileTool(workspace),
-                     file_rename, EditFileTool(workspace),
+                     MoveFileTool(workspace), EditFileTool(workspace),
                      cmake_configure, cmake_build, cmake_test]))
 
 
