@@ -170,6 +170,52 @@ class ReadFileTool(BaseFileTool):
 
         return json.dumps({"first_line": first_line, "total_lines": total_lines, "lines": lines}) 
 
+class CreateFileTool(BaseFileTool):
+    """
+    Creates a new file with the given content.
+    If the parent directory not exists, it will be created.
+    Should not be used to edit already existing files, but may be used
+    to replace the contents of a file entirely.
+
+    Arguments:
+    - filename: path of the file to create
+    - contents: contents of the file
+
+    Returns "ok" on success.
+    """
+    def __init__(self, workdir: str,
+            name: str = "create_file",
+            ignored_files: List[str] | None = None):
+        super(CreateFileTool, self).__init__(workdir, name, ignored_files)
+
+    def __call__(self, filename: str, content: str) -> str:
+        if not isinstance(filename, str) or not isinstance(content, str):
+            return "error: invalid arguments"
+
+        try:
+            resolved_filename = self.resolve(filename)
+        except Exception:
+            return "error: invalid filename"
+
+        relative_filename = os.path.relpath(resolved_filename, self.workdir)
+        if self.is_ignored(relative_filename):
+            return "error: failed to create file"
+
+        parent_dir = os.path.dirname(resolved_filename)
+        if not os.path.isdir(parent_dir):
+            try:
+                os.makedirs(parent_dir)
+            except Exception:
+                return "error: failed to create parent directory"
+
+        try:
+            with open(resolved_filename, "w", encoding="utf-8") as f:
+                f.write(content)
+        except:
+            return "error: failed to create file"
+
+        return "ok"
+
 class EditFileTool(BaseFileTool):
     """
     Edits a file by replacing the occurence of the string `old` by `new`.
