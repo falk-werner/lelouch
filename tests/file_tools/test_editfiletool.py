@@ -74,7 +74,7 @@ def test_edit_fails_file_is_directory():
         filename = "some_directory"
         os.makedirs(os.path.join(workdir, filename))
 
-        tool = EditFileTool(workdir, ignored_files=["test.txt"])
+        tool = EditFileTool(workdir)
         result = tool(filename, "old", "new")
         assert result == "error: failed to read file"
 
