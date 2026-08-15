@@ -45,31 +45,6 @@ def file_rename(source: str, target: str) -> str:
     os.rename(full_source, full_target)
     return "ok"
 
-def file_replace_string(filename: str, old: str, new: str) -> str:
-    """
-    Replaces a single occurece of the string `old` by `new` in the file `filename`.
-    Use this tool to edit existing files.
-    """
-    full_filename = resolve(filename)
-
-    try:
-        with open(full_filename, "r", encoding="utf-8") as f:
-            contents = f.read()
-    except Exception:
-        return "error: failed to read file"
-
-    count = contents.count(old)
-    if count == 1:
-        contents = contents.replace(old, new)
-        with open(full_filename, "w", encoding="utf-8") as f:
-            f.write(contents)
-        return "ok"
-    elif count == 0:
-        return "error: cannot find `old` in file."
-    else:
-        return "error: found `old` multiple times in file; please add more context."
-
-
 def cmake_configure() -> str:
     """Configures a cmake project."""
     result = subprocess.run(["cmake", "-B", build_dir], cwd=workspace, capture_output=True, text=True)
