@@ -1,7 +1,7 @@
 from .tools import Tools, BaseTool
 from .file_tools import BaseFileTool, ListFilesTool, ReadFileTool, \
     RemoveFileTool, CreateFileTool, EditFileTool, MoveFileTool, \
-    CreateDirectoryTool
+    CreateDirectoryTool, RemoveDirectoryTool
 
 __all__ = [
     "Tools",
@@ -14,4 +14,5 @@ __all__ = [
     "EditFileTool",
     "MoveFileTool",
     "CreateDirectoryTool",
+    "RemoveDirectoryTool",
 ]

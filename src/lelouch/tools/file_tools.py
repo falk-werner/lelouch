@@ -4,6 +4,7 @@ from .tools import BaseTool
 import os
 import json
 import fnmatch
+import shutil
 
 from typing import List
 
@@ -75,9 +76,13 @@ class RemoveFileTool(BaseFileTool):
 
 class ListFilesTool(BaseFileTool):
     """
-    Recusively lists files in a directory.
+    Lists file and subdirecties of a given directory.
 
-    Returns a list of files as json array on success.
+    Arguments:
+    - directory: directory to list (default: ".")
+    - recursive: include subdirectories (default: false)
+
+    Returns a list of files and subdirectories as json array on success.
     Returns an error message on failure.
     """
 
@@ -86,7 +91,7 @@ class ListFilesTool(BaseFileTool):
             ignored_files: List[str] | None = None):
         super(ListFilesTool, self).__init__(workdir, name, ignored_files)
 
-    def __call__(self, directory: str = "/") -> str:
+    def __call__(self, directory: str = "/", recursive: bool = False) -> str:
         if not isinstance(directory, str):
             return "error: invalid arguments"
 
@@ -98,19 +103,36 @@ class ListFilesTool(BaseFileTool):
         if not os.path.isdir(resolved_directory):
             return "error: directory not found or not a directory"
 
+        def check(workdir: str, filename: str) -> bool:
+            if os.path.islink(filename):
+                return False
+            
+            if not os.path.isdir(filename) and not os.path.isfile(filename):
+                return False
+
+            relative_filename = os.path.relpath(filename, workdir)
+            return not self.is_ignored(relative_filename)
+
         result = []
+        if not recursive:
+            for filename in os.listdir(resolved_directory):
+                full_path = os.path.join(resolved_directory, filename)
+                if check(self.workdir, full_path):
+                    relative_filename = os.path.relpath(full_path, self.workdir)
+                    result.append(relative_filename)
+            return json.dumps(result)
+
         for root, dirs, files in os.walk(resolved_directory):
+            for dir in dirs:
+                full_path = os.path.join(resolved_directory, root, dir)
+                if check(self.workdir, full_path):
+                    relative_filename = os.path.relpath(full_path, self.workdir)
+                    result.append(relative_filename)
             for file in files:
                 full_path = os.path.join(resolved_directory, root, file)
-
-                if not os.path.isfile(full_path) or os.path.islink(full_path):
-                    continue
-
-                relative_filename = os.path.relpath(full_path, self.workdir)
-                if self.is_ignored(relative_filename):
-                    continue
-
-                result.append(relative_filename)
+                if check(self.workdir, full_path):
+                    relative_filename = os.path.relpath(full_path, self.workdir)
+                    result.append(relative_filename)
 
         return json.dumps(result)
 
@@ -366,3 +388,42 @@ class CreateDirectoryTool(BaseFileTool):
             return "error: failed to create directory"
 
         return "ok"
+
+class RemoveDirectoryTool(BaseFileTool):
+    """
+    Remove a directory including all of it's contents.
+
+    Arguments:
+    - dirname
+
+    Returns "ok" on success.
+    """
+
+    def __init__(self, workdir: str,
+            name: str = "remove_directory",
+            ignored_files: List[str] | None = None):
+        super(RemoveDirectoryTool, self).__init__(workdir, name, ignored_files)
+
+    def __call__(self, dirname: str) -> str:
+        if not isinstance(dirname, str):
+            return "error: invalid arguments"
+        
+        try:
+            resolved_dirname = self.resolve(dirname)
+        except Exception:
+            return "error: invalid dirname"
+
+        relative_dirname = os.path.relpath(resolved_dirname, self.workdir)
+        if not os.path.isdir(resolved_dirname) or self.is_ignored(relative_dirname):
+            return "error: not a directory"
+
+        if resolved_dirname == self.workdir:
+            return "error: not permitted"
+        
+        try:
+            shutil.rmtree(resolved_dirname)
+        except Exception:
+            return "error: failed to remove directory"
+
+        return "ok"
+

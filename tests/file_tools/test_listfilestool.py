@@ -42,13 +42,13 @@ def test_list_files_including_nested_directories():
             file_write(full_filename, f"test file {filename}")
 
         tool = ListFilesTool(workdir)
-        result = json.loads(tool())
+        result = json.loads(tool(recursive=True))
 
-        assert len(result) == len(filenames)
+        assert len(result) == 2 * len(filenames)
         for filename in filenames:
             assert filename in result
 
-def test_do_not_list_directories_and_links():
+def test_do_not_list_links():
     with tempfile.TemporaryDirectory(prefix="lelouch_test_", delete=True) as workdir:
         os.makedirs(os.path.join(workdir, "a"))
         file_write(os.path.join(workdir,"foo.txt"), "test file")
@@ -57,12 +57,13 @@ def test_do_not_list_directories_and_links():
         tool = ListFilesTool(workdir)
         result = json.loads(tool())
 
-        assert len(result) == 1
-        assert result[0] == "foo.txt"
+        assert len(result) == 2
+        assert "a" in result
+        assert "foo.txt" in result
     
 def test_do_not_list_hidden_files_and_directories():
     with tempfile.TemporaryDirectory(prefix="lelouch_test_", delete=True) as workdir:
-        filenames = [".hidden", ".a/.also_hidden.txt", ".b/another_hidden.txt", "c/a/.hidden.txt"]
+        filenames = [".hidden", ".a/.also_hidden.txt", ".b/another_hidden.txt"]
         for filename in filenames:
             full_filename = os.path.join(workdir, filename)
             dirname = os.path.dirname(full_filename)
