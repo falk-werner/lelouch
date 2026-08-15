@@ -67,6 +67,8 @@ class Agent:
 
                     try:
                         result = self.tools.invoke(output.name, output.arguments, self.log)
+                        if not isinstance(result, str):
+                            raise RuntimeError("invalid result type")
                         self.log.info(f"tool result: {result}")
                     except Exception as ex:
                         self.log.warn(f"error calling tools: {ex}")
