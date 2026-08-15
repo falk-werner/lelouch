@@ -324,3 +324,45 @@ class MoveFileTool(BaseFileTool):
             return "error: failed to move file"
 
         return "ok"
+
+class CreateDirectoryTool(BaseFileTool):
+    """
+    Creates a directory.
+    Creates parent directories as needed.
+
+    Arguments:
+    - dirname: path of the directory
+
+    Returns "ok" on success.
+    """
+
+    def __init__(self, workdir: str,
+            name: str = "create_directory",
+            ignored_files: List[str] | None = None):
+        super(CreateDirectoryTool, self).__init__(workdir, name, ignored_files)
+
+    def __call__(self, dirname: str) -> str:
+        if not isinstance(dirname, str):
+            return "error: invalid arguments"
+
+        try:
+            resolved_dirname = self.resolve(dirname)
+        except Exception:
+            return "error: invalid dirname"
+
+        relative_dirname = os.path.relpath(resolved_dirname, self.workdir)
+        if self.is_ignored(relative_dirname):
+            return "error: failed to create directory"
+
+        if os.path.isdir(resolved_dirname):
+            return "ok"
+
+        if os.path.exists(resolved_dirname):
+            return "error: dirname already exists"
+
+        try:
+            os.makedirs(resolved_dirname)
+        except Exception:
+            return "error: failed to create directory"
+
+        return "ok"
