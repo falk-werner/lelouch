@@ -5,6 +5,7 @@ NO_COLOR = ""
 YELLOW = '\033[33m'
 RED = '\033[31m'
 DARK_GRAY = '\033[90m'
+BLUE = '\033[34m'
 RESET = '\033[0m'
 
 class Logger:
@@ -27,9 +28,12 @@ class Logger:
     def reason(self, message: str):
         self._print(DARK_GRAY, f"reasoning: {message}")
 
-
     def info(self, message: str):
         self._print(DARK_GRAY, f"info: {message}")
 
     def warn(self, message: str):
         self._print(YELLOW, f"warning: {message}")
+
+    def ask(self, message: str) -> str:
+        self._print(BLUE, f"{message}")
+        return input()

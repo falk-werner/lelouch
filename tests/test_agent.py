@@ -27,6 +27,9 @@ class FakeLogger:
     def warn(self, message: str):
         self.warnings.append(message)
 
+    def ask(self, message: str) -> str:
+        return "Y"
+
 def test_simple_prompt(httpserver: HTTPServer):
     answer = "I'm a dummy model."
     httpserver.expect_request("/v1/responses").respond_with_json(

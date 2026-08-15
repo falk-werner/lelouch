@@ -7,10 +7,12 @@ import json
 class Tools:
     docs: List
     tools: Dict
+    ask: Dict[bool]
 
     def __init__(self, tools: List | None = None):
-        self.tools = {}
         self.docs = []
+        self.tools = {}
+        self.ask = {}
         if tools:
             for tool in tools:
                 if isinstance(tool, Callable):
@@ -55,10 +57,24 @@ class Tools:
             doc["parameters"] = parameters
 
         self.tools[tool_name] = tool
+        self.ask[tool_name] = ask
         self.docs.append(doc)
 
     def invoke(self, tool_name: str, arguments: str, log: Logger) -> str:
-        log.info(f"Model wants to call tool {tool_name} with arguments {arguments}")
+        ask = self.ask.get(tool_name, True)
+        if ask:
+            permitted = log.ask(f"Model wants to call a tool:\n  name: {tool_name}\n  args: {arguments}\n\nPermit? [Y for yes, A for always, N for no or reason to reject]: ")
+            if permitted in ["", "N", "n"]:
+                return f"error: tool usage not permitted by user"
+            if permitted not in ["Y", "y", "A", "a"]:
+                return f"error: tool usage not permitted by user: {permitted}"
+            if permitted in ["A", "a"]:
+                confirmed = log.ask(f"Do you really want to permit each usage of this tool? [Y/N]: ")
+                if confirmed in ["Y", "y"]:
+                    self.ask[tool_name] = False
+        else:
+            log.info(f"Model calls permitted tool {tool_name} with arguments {arguments}.")
+
         tool = self.tools.get(tool_name)
         if tool:
             args = ()

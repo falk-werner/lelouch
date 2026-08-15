@@ -75,15 +75,26 @@ def cmake_test() -> str:
 
 
 def new_agent(client, args) -> Agent:
+    tools = Tools([
+        CreateFileTool(workspace),
+        RemoveFileTool(workspace),
+        MoveFileTool(workspace),
+        EditFileTool(workspace),
+        CreateDirectoryTool(workspace),
+        RemoveDirectoryTool(workspace),
+        cmake_configure,
+        cmake_build,
+        cmake_test,
+    ])
+    tools.add(ReadFileTool(workspace), ask=False)
+    tools.add(ListFilesTool(workspace), ask=False)
+
     return Agent(client=client,
         model=args.model,
         instructions=args.instructions,
         reasoning=args.reasoning,
-        tools=Tools([ReadFileTool(workspace), ListFilesTool(workspace),
-                     CreateFileTool(workspace), RemoveFileTool(workspace),
-                     MoveFileTool(workspace), EditFileTool(workspace),
-                     CreateDirectoryTool(workspace), RemoveDirectoryTool(workspace),
-                     cmake_configure, cmake_build, cmake_test]))
+        tools=tools,
+    )
 
 
 def main():

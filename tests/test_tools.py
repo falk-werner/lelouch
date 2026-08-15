@@ -8,6 +8,9 @@ class NopLogger():
     def warn(self, message):
         pass
 
+    def ask(self, message) -> str:
+        return "Y"
+
 def test_tools_empty_by_default():
     tools = Tools()
     assert 0 == len(tools.tools)
