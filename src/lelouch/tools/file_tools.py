@@ -169,3 +169,54 @@ class ReadFileTool(BaseFileTool):
             lines = lines[first_line: first_line + line_count]
 
         return json.dumps({"first_line": first_line, "total_lines": total_lines, "lines": lines}) 
+
+class EditFileTool(BaseFileTool):
+    """
+    Edits a file by replacing the occurence of the string `old` by `new`.
+
+    Arguments:
+    - filename: path of the file to edit
+    - old: string to be replaces, must be unique within the file
+    - new: string that replaces `old` in the file
+
+    Returns "ok" on success.
+    """
+
+    def __init__(self, workdir: str,
+            name: str = "edit_file",
+            ignored_files: List[str] | None = None):
+        super(EditFileTool, self).__init__(workdir, name, ignored_files)
+
+    def __call__(self, filename: str, old: str, new: str) -> str:
+        if not isinstance(filename, str) or not isinstance(old, str) \
+                or not isinstance(new, str):
+            return "error: invalid arguments"
+
+        try:
+            resolved_filename = self.resolve(filename)
+        except Exception:
+            return "error: invalid filename"
+
+        relative_filename = os.path.relpath(resolved_filename, self.workdir)
+        if not os.path.exists(resolved_filename) or self.is_ignored(relative_filename):
+            return "error: file not found"
+
+        try:
+            with open(resolved_filename, "r", encoding="utf-8") as f:
+                content = f.read()
+        except Exception:
+            return "error: failed to read file"
+
+        count = content.count(old)
+        if count == 1:
+            try:
+                content = content.replace(old, new)
+                with open (resolved_filename, "w", encoding="utf-8") as f:
+                    f.write(content)
+            except Exception:
+                return "error: failed to write file"
+            return "ok"
+        elif count == 0:
+            return "error: cannot find `old` in file"
+        else:
+            return "error: found `old` muliple times in file; please add more context"
