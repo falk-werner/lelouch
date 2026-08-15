@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 from lelouch import Agent, Tools
-from lelouch.tools import ReadFileTool, ListFilesTool, RemoveFileTool, EditFileTool
+from lelouch.tools import ReadFileTool, ListFilesTool, RemoveFileTool, \
+    CreateFileTool, EditFileTool
 from openai import OpenAI
 import argparse
 import os
@@ -20,22 +21,6 @@ def resolve(path: str) -> str:
         raise RuntimeError("path traversal detected")
 
     return resolved_path
-
-def file_create(filename: str, contents: str) -> str:
-    """
-    Creates a new file with the given contents.
-    If the parent dir does not exist, it will be created.
-    Should not be used to edit already existing files.
-    """
-    full_filename = resolve(filename)
-
-    parent_dir = os.path.dirname(full_filename)
-    if not os.path.isdir(parent_dir):
-        os.makedirs(parent_dir)
-
-    with open(full_filename, "w", encoding="utf-8") as f:
-        f.write(contents)
-    return "ok"
 
 def file_rename(source: str, target: str) -> str:
     """Renames the file or directory source to target."""
@@ -94,7 +79,7 @@ def new_agent(client, args) -> Agent:
         instructions=args.instructions,
         reasoning=args.reasoning,
         tools=Tools([ReadFileTool(workspace), ListFilesTool(workspace),
-                     file_create, RemoveFileTool(workspace),
+                     CreateFileTool(workspace), RemoveFileTool(workspace),
                      file_rename, EditFileTool(workspace),
                      cmake_configure, cmake_build, cmake_test]))
 
