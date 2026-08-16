@@ -15,22 +15,6 @@ import tempfile
 workspace = None
 build_dir = None
 
-def resolve(path: str) -> str:
-    resolved_path = os.path.realpath(os.path.join(workspace, path.lstrip("/")))
-
-    if os.path.commonpath([workspace, resolved_path]) != workspace:
-        raise RuntimeError("path traversal detected")
-
-    return resolved_path
-
-def file_rename(source: str, target: str) -> str:
-    """Renames the file or directory source to target."""
-    full_source = resolve(source)
-    full_target = resolve(target)
-
-    os.rename(full_source, full_target)
-    return "ok"
-
 def cmake_configure() -> str:
     """Configures a cmake project."""
     result = subprocess.run(["cmake", "-B", build_dir], cwd=workspace, capture_output=True, text=True)
