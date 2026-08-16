@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from lelouch import Agent, Tools, Logger
+from lelouch import Agent, Tools, UserInteraction
 from openai import OpenAI
 import argparse
 from os import getenv
@@ -22,13 +22,13 @@ def main():
 
     client = OpenAI(base_url=args.base_url, api_key=args.api_key)
     tools = Tools([get_date])
-    log = Logger(use_color=not args.no_color)
+    user_interaction = UserInteraction(use_color=not args.no_color)
     agent = Agent(client=client,
         model=args.model,
         instructions=args.instructions,
         tools=tools,
         reasoning=args.reasoning,
-        log=log)
+        user_interaction=user_interaction)
     agent.execute(args.prompt)
 
 if __name__ == "__main__":

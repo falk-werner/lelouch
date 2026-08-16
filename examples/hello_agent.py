@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from lelouch import Agent
-from lelouch import Logger
+from lelouch import UserInteraction
 from openai import OpenAI
 import argparse
 from os import getenv
@@ -18,12 +18,12 @@ def main():
     parser.add_argument("prompt", type=str)
     args = parser.parse_args()
     client = OpenAI(base_url=args.base_url, api_key= args.api_key)
-    log = Logger(use_color=not args.no_color)
+    user_interaction = UserInteraction(use_color=not args.no_color)
     agent = Agent(client=client,
         model=args.model,
         instructions=args.instructions,
         reasoning=args.reasoning,
-        log=log)
+        user_interaction=user_interaction)
     agent.execute(args.prompt)
 
 if __name__ == "__main__":

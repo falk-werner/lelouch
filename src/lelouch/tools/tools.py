@@ -1,5 +1,5 @@
 
-from ..logger import Logger
+from ..user_interaction import UserInteraction
 from typing import List, Dict, Callable
 import inspect
 import json
@@ -60,28 +60,28 @@ class Tools:
         self.ask[tool_name] = ask
         self.docs.append(doc)
 
-    def invoke(self, tool_name: str, arguments: str, log: Logger) -> str:
+    def invoke(self, tool_name: str, arguments: str, user_interaction: UserInteraction) -> str:
         arguments=json.loads(arguments)
         ask = self.ask.get(tool_name, True)
         if ask:
-            permitted = log.ask(f"Model wants to call a tool:\n  name: {tool_name}\n  args: {json.dumps(arguments,indent=4)}\n\nPermit? [Y for yes, A for always, N for no or reason to reject]: ")
+            permitted = user_interaction.ask(f"Model wants to call a tool:\n  name: {tool_name}\n  args: {json.dumps(arguments,indent=4)}\n\nPermit? [Y for yes, A for always, N for no or reason to reject]: ")
             if permitted in ["", "N", "n"]:
                 return f"error: tool usage not permitted by user"
             if permitted not in ["Y", "y", "A", "a"]:
                 return f"error: tool usage not permitted by user: {permitted}"
             if permitted in ["A", "a"]:
-                confirmed = log.ask(f"Do you really want to permit each usage of this tool? [Y/N]: ")
+                confirmed = user_interaction.ask(f"Do you really want to permit each usage of this tool? [Y/N]: ")
                 if confirmed in ["Y", "y"]:
                     self.ask[tool_name] = False
         else:
-            log.info(f"Model calls permitted tool {tool_name} with arguments {json.dumps(arguments, indent=4)}.")
+            user_interaction.info(f"Model calls permitted tool {tool_name} with arguments {json.dumps(arguments, indent=4)}.")
 
         tool = self.tools.get(tool_name)
         if tool:
             args = ()
             kwargs = arguments
             return tool(*args, **kwargs)
-        log.warn(f"unknown tool {tool_name}")
+        user_interaction.warn(f"unknown tool {tool_name}")
         return "error: unknown tool"
 
     def get(self):

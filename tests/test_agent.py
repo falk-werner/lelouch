@@ -3,7 +3,7 @@ from openai import OpenAI
 from pytest_httpserver import HTTPServer
 from typing import List
 
-class FakeLogger:
+class FakeUserInterfaction:
     messages: List[str]
     infos: List[str]
     reasonings: List[str]
@@ -48,12 +48,12 @@ def test_simple_prompt(httpserver: HTTPServer):
 
     url = httpserver.url_for("/v1")
     client = OpenAI(base_url=url, api_key="empty")
-    log = FakeLogger()
-    agent = Agent(client=client, model="dummy", log=log)
+    user_interaction = FakeUserInterfaction()
+    agent = Agent(client=client, model="dummy", user_interaction=user_interaction)
     agent.execute("Who are you?")
-    assert 1 == len(log.messages)
-    assert "I'm a dummy model." == log.messages[0]
-    assert 0 == len(log.reasonings)
+    assert 1 == len(user_interaction.messages)
+    assert "I'm a dummy model." == user_interaction.messages[0]
+    assert 0 == len(user_interaction.reasonings)
 
 def test_simple_prompt_with_reasoning(httpserver: HTTPServer):
     reasoning = "Am I a teapot?"
@@ -80,13 +80,13 @@ def test_simple_prompt_with_reasoning(httpserver: HTTPServer):
 
     url = httpserver.url_for("/v1")
     client = OpenAI(base_url=url, api_key="empty")
-    log = FakeLogger()
-    agent = Agent(client=client, model="dummy", log=log)
+    user_interaction = FakeUserInterfaction()
+    agent = Agent(client=client, model="dummy", user_interaction=user_interaction)
     agent.execute("Who are you?")
-    assert 1 == len(log.messages)
-    assert answer == log.messages[0]
-    assert 1 == len(log.reasonings)
-    assert reasoning == log.reasonings[0]
+    assert 1 == len(user_interaction.messages)
+    assert answer == user_interaction.messages[0]
+    assert 1 == len(user_interaction.reasonings)
+    assert reasoning == user_interaction.reasonings[0]
 
 def test_tool_usage(httpserver: HTTPServer):
     httpserver.expect_ordered_request("/v1/responses").respond_with_json({
@@ -114,11 +114,11 @@ def test_tool_usage(httpserver: HTTPServer):
     )
     url = httpserver.url_for("/v1")
     client = OpenAI(base_url=url, api_key="empty")
-    log = FakeLogger()
-    agent = Agent(client=client, model="dummy", log=log)
+    user_interaction = FakeUserInterfaction()
+    agent = Agent(client=client, model="dummy", user_interaction=user_interaction)
     agent.execute("Who are you?")
-    assert 1 == len(log.messages)
-    assert "I'm a dummy model." == log.messages[0]
-    assert 0 == len(log.reasonings)
-    assert 1 == len(log.warnings)
-    assert "unknown tool dummy" == log.warnings[0]
+    assert 1 == len(user_interaction.messages)
+    assert "I'm a dummy model." == user_interaction.messages[0]
+    assert 0 == len(user_interaction.reasonings)
+    assert 1 == len(user_interaction.warnings)
+    assert "unknown tool dummy" == user_interaction.warnings[0]
