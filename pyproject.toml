@@ -24,3 +24,6 @@ license-files = ["LICENSE"]
 [project.urls]
 Homepage = "https://github.com/falk-werner/lelouch"
 Issues = "https://github.com/falk-werner/lelouch/issues"
+
+[project.scripts]
+lelouch = "lelouch.cli:main"
