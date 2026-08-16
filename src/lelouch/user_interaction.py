@@ -8,13 +8,17 @@ DARK_GRAY = '\033[90m'
 BLUE = '\033[34m'
 RESET = '\033[0m'
 
-class Logger:
+class UserInteraction:
     use_color: bool
     printer: Callable
+    prompter: Callable
 
-    def __init__(self, use_color=True, printer: Callable | None = None):
+    def __init__(self, use_color=True, 
+            printer: Callable | None = None,
+            prompter: Callable | None = None):
         self.use_color = use_color
         self.printer = printer if printer else print
+        self.prompter = prompter if prompter else input
 
     def _print(self, color: str, message: str):
         if self.use_color:
@@ -36,4 +40,4 @@ class Logger:
 
     def ask(self, message: str) -> str:
         self._print(BLUE, f"{message}")
-        return input()
+        return self.prompter()

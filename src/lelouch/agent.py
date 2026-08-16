@@ -1,6 +1,6 @@
 
 from .tools import Tools
-from .logger import Logger
+from .user_interaction import UserInteraction
 from openai import OpenAI, omit
 from os import getenv
 from typing import List
@@ -18,7 +18,7 @@ class Agent:
     tools: Tools
     input_list: List
     reasoning: bool
-    log: Logger
+    user_interaction: UserInteraction
 
     def __init__(self,
             client: OpenAI | None = None,
@@ -26,14 +26,14 @@ class Agent:
             instructions: str = "",
             tools: Tools | None = None,
             reasoning: bool | str | None = None,
-            log: Logger | None = None):
+            user_interaction: UserInteraction | None = None):
         self.client = client if client else OpenAI()
         self.model = model if model else getenv_or_die("MODEL")
         self.instructions = instructions
         self.tools = tools if tools else Tools()
         self.input_list = []
         self.reasoning = reasoning
-        self.log = log if log else Logger()
+        self.user_interaction = user_interaction if user_interaction else UserInteraction()
 
     def execute(self, prompt: str):
         self.input_list.append({
@@ -67,15 +67,15 @@ class Agent:
                     done = False
 
                     try:
-                        result = self.tools.invoke(output.name, output.arguments, self.log)
+                        result = self.tools.invoke(output.name, output.arguments, self.user_interaction)
                         if not isinstance(result, str):
                             raise RuntimeError("invalid result type")
                         try:
-                            self.log.info(f"tool result: {json.dumps(json.loads(result), indent=4)}")
+                            self.user_interaction.info(f"tool result: {json.dumps(json.loads(result), indent=4)}")
                         except Exception:
-                            self.log.info(f"tool result: {result}")
+                            self.user_interaction.info(f"tool result: {result}")
                     except Exception as ex:
-                        self.log.warn(f"error calling tools: {ex}")
+                        self.user_interaction.warn(f"error calling tools: {ex}")
                         result = "error"
 
                     self.input_list.append({
@@ -85,13 +85,13 @@ class Agent:
                     })
                 elif output.type == "message":
                     for item in output.content:
-                        self.log.print(item.text)
-                    self.log.info(f"Status: {output.status}")
+                        self.user_interaction.print(item.text)
+                    self.user_interaction.info(f"Status: {output.status}")
                 elif output.type == "reasoning":
                     for item in output.content:
-                        self.log.reason(f"{item.text}")
+                        self.user_interaction.reason(f"{item.text}")
                 else:
-                    self.log.warn(f"ignore unsupported output type: {output.type}")
+                    self.user_interaction.warn(f"ignore unsupported output type: {output.type}")
 
             
 

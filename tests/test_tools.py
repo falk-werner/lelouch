@@ -1,7 +1,7 @@
 from lelouch import Tools
 import pytest
 
-class NopLogger():
+class NopUserInteraction():
     def info(self, message):
         pass
 
@@ -40,11 +40,11 @@ def test_add_dummy_tool():
     assert "dummy" == docs[0].get("name")
     assert "Dummy" == docs[0].get("description")
 
-    log = NopLogger()
-    result = tools.invoke("dummy","{}", log)
+    user_interaction = NopUserInteraction()
+    result = tools.invoke("dummy","{}", user_interaction)
     assert "dummy tool" == result
 
-    result = tools.invoke("unknown_tool", "{}", log)
+    result = tools.invoke("unknown_tool", "{}", user_interaction)
     assert "error: unknown tool" == result
 
 def test_add_with_custom_name():
@@ -119,6 +119,6 @@ def test_invoke_tools_with_arguments():
         return str(a + b)
 
     tools = Tools([add])
-    log = NopLogger()
-    result = tools.invoke("add", "{\"a\": 1, \"b\": 1}", log)
+    user_interaction = NopUserInteraction()
+    result = tools.invoke("add", "{\"a\": 1, \"b\": 1}", user_interaction)
     assert "2" == result
